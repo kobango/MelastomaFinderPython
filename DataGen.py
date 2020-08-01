@@ -1,31 +1,45 @@
 import numpy as np
 import os
 import PIL
+from PIL import Image
+
 
 
 def MasDataReadAll(path):
     Labelset = []
     ImputSet = []
     ## Wczytajnie txt pliku z opisaem danych
-    e = os.path.join(path+"\\PH2_dataset.txt")
+    pathToTxtFile = os.path.join(path+"\\PH2_dataset.txt")
 
-    f = open(e,"r")
+    txtFile = open(pathToTxtFile,"r")
 
-    labelName=f.readline()
+    labelName=txtFile.readline()
+
+    labelName =labelName.replace(" ","")
+    labelArray = labelName.split('||')
+    print(labelArray)
+    indexOfName = labelArray.index("Name")
+    indexOfClinicalDiagnosis = labelArray.index("ClinicalDiagnosis")
+    indexOfFirstValue = 0
+    imageHeight = 576
+    imageWith = 764
+    numberOfCanal = 3
+    typeOfImageResizeAproxymation = PIL.Image.ANTIALIAS
 
     while True:
-        line =f.readline()
-        if(line[0]!="|"):
+        line =txtFile.readline()
+        if(line[indexOfFirstValue]!="|"):
             break
         lineValuetable=line.split("||")
-        diagnosticValue = int(lineValuetable[3].replace(" ",""))
-        numerOfImage = lineValuetable[1].replace(" ","")
+        diagnosticValue = int(lineValuetable[indexOfClinicalDiagnosis].replace(" ",""))
+        numerOfImage = lineValuetable[indexOfName].replace(" ","")
         Labelset.append(diagnosticValue)
         pathToImage = path+"\\PH2 Dataset images\\"+numerOfImage+"\\"+numerOfImage+"_Dermoscopic_Image\\"+numerOfImage+".bmp"
         print(pathToImage)
-        oneImg = PIL.Image.open(pathToImage)
-        oneImg =oneImg.resize((764,576),PIL.Image.ANTIALIAS)
-        tablizedImage = np.array(oneImg.getdata()).reshape(764,576,3)
+
+        oneImg = Image.open(pathToImage)
+        oneImg =oneImg.resize((imageWith,imageHeight),typeOfImageResizeAproxymation)
+        tablizedImage = np.array(oneImg.getdata()).reshape(imageWith,imageHeight,numberOfCanal)
         ImputSet.append(tablizedImage)
 
 
@@ -38,6 +52,7 @@ def main():
     print("Main function of the module")
     Inputset, Labelset = MasDataReadAll('D:\\PH2Dataset')
     print(Inputset.__sizeof__())
+    print(Inputset)
     print(Labelset)
 
 if __name__ == "__main__":
